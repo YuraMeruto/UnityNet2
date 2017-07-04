@@ -21,18 +21,18 @@ public class Client : MonoBehaviour {
     }
     void ClientSendServer()
     {
-        Thread AcceptServer = new Thread(ClientAcceptServer);
-        AcceptServer.Start();
         Debug.Log("クライアント起動");
         TcpClient client = new TcpClient("10.40.0.20", portnumber);
         string str = "hogehoge";
         byte[] tmp = Encoding.UTF8.GetBytes(str);
         NetworkStream stream = client.GetStream();
         stream.Write(tmp,0,tmp.Length);
+        Thread AcceptServer = new Thread(ClientAcceptServer_IsLogin);
+        AcceptServer.Start();
         client.Close();
     }
 
-    void ClientAcceptServer()
+    void ClientAcceptServer_IsLogin()
     {
         Debug.Log("サーバーからの返事を待っています");
         TcpListener myclient = new TcpListener(serverip,portnumber);
@@ -42,10 +42,21 @@ public class Client : MonoBehaviour {
         Byte[] bytes = new Byte[100];
         int i;
         string str="";
+
         while((i = stream.Read(bytes,0,bytes.Length))!=0)
         {
             str += Encoding.UTF8.GetString(bytes,0,i);
         }
+        if(bool.Parse(str)==true)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameStage");
+        }
+        else
+        {
+            Thread AgainSendServer = new Thread(ClientSendServer);
+            AgainSendServer.Start();
+        }
+        
         server.Close();
     }
 

@@ -6,11 +6,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System;
 public class Server : MonoBehaviour {
     public Text text;
     private  int portnumber = 9999;
     private Thread thre;
     private IPAddress clientIPAdress;
+    private bool Is_Login = false;
     void Start()
     {
         thre = new Thread(ServerStart);
@@ -45,8 +47,10 @@ void ServerStart()
         {
             result[i] = bytelist[i];
         }
+        Is_Login = true;
         string data = Encoding.UTF8.GetString(result);
-        Thread sendclientThread = new Thread(ServerSendClient);
+        Thread sendclientThread = new Thread(ServerSendClient_IsLogin);
+        sendclientThread.Start();
         Debug.Log("IpAdress"+ clientIPAdress.ToString());
         Debug.Log("送られてきた内容"+result);
         client.Close();
@@ -54,8 +58,13 @@ void ServerStart()
     
 
     //クライアントに送るメッセージを実装
-    void ServerSendClient()
+    void ServerSendClient_IsLogin()
     {
-        
+        string clientIPAdress_string = clientIPAdress.ToString();
+        TcpClient client_send = new TcpClient(clientIPAdress_string, portnumber);
+         Byte[] sendmessage = Encoding.UTF8.GetBytes(Is_Login.ToString());
+        NetworkStream stream = client_send.GetStream();
+        stream.Write(sendmessage,0,sendmessage.Length);
+        client_send.Close();
     }
 }
