@@ -16,6 +16,6 @@ public class Mass : MonoBehaviour {
 
     public void SetMaterial(int num)
     {
-        GetComponent<SpriteRenderer>().material = mass_material[num];
+       gameObject.GetComponent<Renderer>().material = mass_material[num];
     }
 }
