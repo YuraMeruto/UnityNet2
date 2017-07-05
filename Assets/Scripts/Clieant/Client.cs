@@ -13,16 +13,26 @@ public class Client : MonoBehaviour {
     private const int portnumber = 9999;
     private Thread sendthread;
     private IPAddress serverip;
+    public Text tex;
+    private bool Is_Scene=false;
     void Start()
     {
-        serverip = IPAddress.Parse("10.40.0.20");
+        serverip = IPAddress.Parse("192.168.0.7");
         sendthread = new Thread(ClientSendServer);
         sendthread.Start();
+    }
+
+    void Update()
+    {
+        if(Is_Scene)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameStage");
+        }
     }
     void ClientSendServer()
     {
         Debug.Log("クライアント起動");
-        TcpClient client = new TcpClient("10.40.0.20", portnumber);
+        TcpClient client = new TcpClient(serverip.ToString(), portnumber);
         string str = "hogehoge";
         byte[] tmp = Encoding.UTF8.GetBytes(str);
         NetworkStream stream = client.GetStream();
@@ -35,29 +45,65 @@ public class Client : MonoBehaviour {
     void ClientAcceptServer_IsLogin()
     {
         Debug.Log("サーバーからの返事を待っています");
+        /*
         TcpListener myclient = new TcpListener(serverip,portnumber);
         myclient.Start();
         TcpClient server = myclient.AcceptTcpClient();
         NetworkStream stream = server.GetStream();
-        Byte[] bytes = new Byte[100];
-        int i;
-        string str="";
-
-        while((i = stream.Read(bytes,0,bytes.Length))!=0)
+        //1バイトずつ受け取る
+        byte[] getData = new byte[1];
+        //バイト数がわからないためリストで管理
+        List<byte> bytelist = new List<byte>();
+        int cnt;
+        while ((cnt = stream.Read(getData, 0, getData.Length)) > 0)
         {
-            str += Encoding.UTF8.GetString(bytes,0,i);
+            bytelist.Add(getData[0]);
         }
-        if(bool.Parse(str)==true)
+
+        byte[] result = new byte[bytelist.Count];
+
+        for (int i = 0; i < result.Length; i++)
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene("GameStage");
+            result[i] = bytelist[i];
+        }
+        Debug.Log(bool.Parse(result.ToString()));
+        string data = Encoding.UTF8.GetString(result);
+        */
+        IPAddress adress = IPAddress.Parse("192.168.0.7");
+        TcpListener server = new TcpListener(adress, portnumber);
+        server.Start();
+        TcpClient client = server.AcceptTcpClient();
+
+
+        NetworkStream stream = client.GetStream();
+
+        //1バイトずつ受け取る
+        byte[] getData = new byte[1];
+        //バイト数がわからないためリストで管理
+        List<byte> bytelist = new List<byte>();
+        int cnt;
+        while ((cnt = stream.Read(getData, 0, getData.Length)) > 0)
+        {
+            bytelist.Add(getData[0]);
+        }
+        byte[] result = new byte[bytelist.Count];
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = bytelist[i];
+        }
+        string data = Encoding.UTF8.GetString(result);
+        if (bool.Parse(result.ToString())==true)
+        {
+            Is_Scene = true;
         }
         else
         {
             Thread AgainSendServer = new Thread(ClientSendServer);
             AgainSendServer.Start();
         }
-        
-        server.Close();
+        client.Close();      
+//        server.Close();
     }
 
 

@@ -23,7 +23,7 @@ void ServerStart()
     {
         Debug.Log("サーバー起動");
         //        TcpClient client = new TcpClient(my.MyIPAddressStr,portnumber);
-        IPAddress adress = IPAddress.Parse("10.40.0.20");
+        IPAddress adress = IPAddress.Parse("192.168.0.7");
         TcpListener server = new TcpListener(adress,portnumber);
         server.Start();
         TcpClient client = server.AcceptTcpClient();
@@ -52,7 +52,8 @@ void ServerStart()
         Thread sendclientThread = new Thread(ServerSendClient_IsLogin);
         sendclientThread.Start();
         Debug.Log("IpAdress"+ clientIPAdress.ToString());
-        Debug.Log("送られてきた内容"+result);
+        Debug.Log("送られてきた内容"+result.ToString());
+        Debug.Log("送られてきた内容" + data);
         client.Close();
     }
     
@@ -60,6 +61,7 @@ void ServerStart()
     //クライアントに送るメッセージを実装
     void ServerSendClient_IsLogin()
     {
+        Debug.Log("クライアントにメッセージを送信中");
         string clientIPAdress_string = clientIPAdress.ToString();
         TcpClient client_send = new TcpClient(clientIPAdress_string, portnumber);
          Byte[] sendmessage = Encoding.UTF8.GetBytes(Is_Login.ToString());
