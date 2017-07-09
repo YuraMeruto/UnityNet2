@@ -7,6 +7,6 @@ public class EnterButton : MonoBehaviour {
 
     public void OnClick()
     {
-        GetComponent<Client>().enabled = true;
+        GetComponent<Client2>().enabled = true;
     }
 }
