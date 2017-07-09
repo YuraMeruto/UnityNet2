@@ -61,6 +61,7 @@ void ServerStart()
     //クライアントに送るメッセージを実装
     void ServerSendClient_IsLogin()
     {
+
         Debug.Log("クライアントにメッセージを送信中");
         string clientIPAdress_string = clientIPAdress.ToString();
         TcpClient client_send = new TcpClient(clientIPAdress_string, portnumber);

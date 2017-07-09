@@ -24,7 +24,7 @@ public class Server2 : MonoBehaviour
     private bool ret = false;
     void Start()
     {
-        myaddress = IPAddress.Parse("10.40.0.4");
+        myaddress = IPAddress.Parse("192.168.0.7");
         ipend = new IPEndPoint(myaddress, Int32.Parse(portnumber.ToString()));
         TcpListener server = new TcpListener(myaddress, portnumber);
         sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -38,16 +38,39 @@ public class Server2 : MonoBehaviour
         sock.Bind(ipend);
         sock.Listen(10);
         Debug.Log("hahahaha");
-        while (ret)
-        {
 
-            if (sock != null && sock.Poll(0, SelectMode.SelectRead))
+        while (true)
+        {
+            m_lisner = sock.Accept();
+            if (m_lisner.Connected)
             {
+                Debug.Log("接続確認");
+                byte[] recv = new byte[1000];
+                m_lisner.Receive(recv);
+                string msg = Encoding.UTF8.GetString(recv);
+                Debug.Log(msg);
+                ret = true;
+            }
+            if (ret)
+            {
+                while (true)
+                {
+                    byte[] sendbyte = Encoding.UTF8.GetBytes("1");
+
+                    m_lisner.Send(sendbyte, sendbyte.Length, SocketFlags.None);
+                    Debug.Log("クライアントに送信しました");
+                    ret = false;
+                    
+                }
+            }
+            /*
+            //if (sock != null && sock.Poll(0, SelectMode.SelectRead))
+            //{
                 m_lisner = sock.Accept();
                 Debug.Log("接続してきた");
                 byte[] buffer = new byte[10000];
-                while (m_lisner.Poll(0, SelectMode.SelectRead))
-                {
+                //while (m_lisner.Poll(0, SelectMode.SelectRead))
+               // {
                     int recvsize = m_lisner.Receive(buffer, buffer.Length, SocketFlags.None);
                     if (recvsize == 0)
                     {
@@ -62,16 +85,12 @@ public class Server2 : MonoBehaviour
                     string recvstr = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
                     ms.Close();
                     Debug.Log(recvsize);
-                }
+                //}
 
-            }
-            ClientSend();
+            //}
+            */
         }
-
-
-
     }
-
     void ClientSend()
     {
         Debug.Log("クライアントに送信中");
