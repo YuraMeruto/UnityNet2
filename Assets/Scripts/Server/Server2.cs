@@ -12,22 +12,26 @@ public class Server2 : MonoBehaviour
 {
 
     private IPEndPoint ipend;
+    private IPEndPoint ipend2;
     private Socket sock;
     private Socket m_lisner;
+    private Socket sendsocket;
     private Thread aceptthread;
     private bool threadloop = true;
     private IPAddress myaddress;
-    private int portnumber = 9999;
-    private int portnumber2 = 9998;
+    private int portnumber = 9999;//くらいあんとから受信用
+    private int portnumber2 = 9998;//クライアントへの送信用
     private bool Is_Login = false;
     private NetworkStream ns;
     private bool ret = false;
     void Start()
     {
-        myaddress = IPAddress.Parse("192.168.0.7");
+        myaddress = IPAddress.Parse("10.40.0.10");
         ipend = new IPEndPoint(myaddress, Int32.Parse(portnumber.ToString()));
+        ipend2 = new IPEndPoint(myaddress, Int32.Parse(portnumber2.ToString()));
         TcpListener server = new TcpListener(myaddress, portnumber);
         sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        sendsocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         aceptthread = new Thread(ClientAccept);
         aceptthread.Start();
     }
@@ -37,32 +41,37 @@ public class Server2 : MonoBehaviour
         Debug.Log("接続町");
         sock.Bind(ipend);
         sock.Listen(10);
-        Debug.Log("hahahaha");
+
 
         while (true)
         {
             m_lisner = sock.Accept();
-            if (m_lisner.Connected)
+            if(m_lisner.Connected)
             {
-                Debug.Log("接続確認");
-                byte[] recv = new byte[1000];
-                m_lisner.Receive(recv);
-                string msg = Encoding.UTF8.GetString(recv);
-                Debug.Log(msg);
-                ret = true;
+                sendsocket.Connect(ipend2);
             }
-            if (ret)
-            {
-                while (true)
-                {
-                    byte[] sendbyte = Encoding.UTF8.GetBytes("1");
 
-                    m_lisner.Send(sendbyte, sendbyte.Length, SocketFlags.None);
-                    Debug.Log("クライアントに送信しました");
-                    ret = false;
-                    
+
+                if (m_lisner.Connected && sendsocket.Connected)
+                {
+                    Debug.Log("受信します");
+                    byte[] recv = new byte[1000];
+                    m_lisner.Receive(recv);
+                    string msg = Encoding.UTF8.GetString(recv);
+                    Debug.Log(msg);
+                    ret = true;
                 }
+
+            if (ret && sendsocket.Connected)
+            {
+                byte[] sendbyte = Encoding.UTF8.GetBytes("1");
+                Debug.Log("クライアント" + sendsocket.RemoteEndPoint + "がつながりました");
+                sendsocket.Send(sendbyte, sendbyte.Length, SocketFlags.None);
+                Debug.Log("クライアントに送信しました");
+                ret = false;
             }
+
+        }
             /*
             //if (sock != null && sock.Poll(0, SelectMode.SelectRead))
             //{
@@ -89,7 +98,7 @@ public class Server2 : MonoBehaviour
 
             //}
             */
-        }
+        
     }
     void ClientSend()
     {
