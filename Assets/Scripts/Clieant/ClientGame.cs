@@ -28,6 +28,7 @@ public class ClientGame : MonoBehaviour
     private enum State { Nones, Send, Recv, Accept, Connect }
     private State state = State.Nones;
     private bool Is_Recv = false;
+    public List<Ranking> ranklist;
     void Start()
     {
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -39,36 +40,37 @@ public class ClientGame : MonoBehaviour
         epname = new IPEndPoint(server_ip, sendnameport);
         Thread thre = new Thread(Ini);
     }
-    // Update is called once per frame
-    void Update()
-    {
 
-    }
 
     void Ini()
     {
         server.Connect(ep);
         if (server.Connected)
         {
-            state = State.Nones;
+            ServerSendRanking("hogeohge", 100.0f);
         }
     }
 
-    void ServerSendRanking(string name, string time)
+    void ServerSendRanking(string name, float time)
     {
         if (server.Connected)
         {
-            namesendsocket.Connect(epname);
-            timesendsocket.Connect(eptime);
-            if (timesendsocket.Connected && namesendsocket.Connected)
-            {
-                byte[] sendname = Encoding.UTF8.GetBytes(name);
-                byte[] sendtime = Encoding.UTF8.GetBytes(time);
-                namesendsocket.Send(sendname, sendname.Length, SocketFlags.None);
-                timesendsocket.Send(sendtime, sendtime.Length, SocketFlags.None);
-                Is_Recv = true;
-                ServerRecv();
-            }
+            //            namesendsocket.Connect(epname);
+            //            timesendsocket.Connect(eptime);
+            //            if (timesendsocket.Connected && namesendsocket.Connected)
+            //            {
+            //                byte[] sendname = Encoding.UTF8.GetBytes(name);
+            //                byte[] sendtime = Encoding.UTF8.GetBytes(time.ToString());
+            //                byte[] sendSlash = Encoding.UTF8.GetBytes("/");
+            //                namesendsocket.Send(sendname, sendname.Length, SocketFlags.None);
+            //                timesendsocket.Send(sendtime, sendtime.Length, SocketFlags.None);
+
+            string summessage = name + "/" + time.ToString();
+            byte[] sendmessage = Encoding.UTF8.GetBytes(summessage);
+            server.Send(sendmessage,sendmessage.Length,SocketFlags.None);
+            Is_Recv = true;
+            ServerRecv();
+            //            }
         }
         else
         {
