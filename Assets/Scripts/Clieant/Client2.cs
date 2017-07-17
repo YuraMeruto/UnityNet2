@@ -8,7 +8,8 @@ using System.Text;
 using System.Threading;
 using System;
 using System.IO;
-public class Client2 : MonoBehaviour {
+public class Client2 : MonoBehaviour
+{
 
 
     private Socket sock;
@@ -17,17 +18,18 @@ public class Client2 : MonoBehaviour {
     private int portnum = 9999;
     private bool Is_Login = false;
     private IPEndPoint ep;
+    private Socket m_lisner;
     void Start()
     {
         server_ip = IPAddress.Parse("192.168.0.7");
-        sock = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-        ep = new IPEndPoint(server_ip,portnum);
+        sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        ep = new IPEndPoint(server_ip, portnum);
         acceptthread = new Thread(SendServer);
 
         acceptthread.Start();
     }
 
-     void SendServer()
+    void SendServer()
     {
 
         while (true)
@@ -43,20 +45,20 @@ public class Client2 : MonoBehaviour {
             sock.Send(bytes, bytes.Length, SocketFlags.None);
             Debug.Log("サーバーにメッセージを送りました");
 
-                
-                byte[] recvbyte = new byte[100];
-                Debug.Log("ただ今応答待ち中");
-                int retrecv = recvsock.Receive(recvbyte,recvbyte.Length,SocketFlags.None);
-                string recvstr = Encoding.UTF8.GetString(recvbyte, 0, retrecv);
 
-                Is_Login = bool.Parse(recvstr);
-                Debug.Log(recvstr+"をいただきました");
-            
+            byte[] recvbyte = new byte[100];
+            Debug.Log("ただ今応答待ち中");
+            int retrecv = sock.Receive(recvbyte);
+            string recvstr = Encoding.UTF8.GetString(recvbyte, 0, retrecv);
+
+            Is_Login = bool.Parse(recvstr);
+            Debug.Log(recvstr + "をいただきました");
+
         }
     }
     void Update()
     {
-       if(Is_Login)
+        if (Is_Login)
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene("GameStage");
         }
